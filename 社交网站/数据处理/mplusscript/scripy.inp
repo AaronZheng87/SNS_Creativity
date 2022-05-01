@@ -1,0 +1,25 @@
+data:file is /Users/zhengyuanrui/Desktop/社交网站/数据处理/mplusscript/ses.dat;
+variable:
+NAMES ARE SES1 SES2  SES3_r SES4 SES5_r SES6 SES7 SES8 SES9_r SES10_r;
+
+usevar = SES1 SES2  SES3_r SES4 SES5_r SES6 SES7 SES8 SES9_r SES10_r;
+
+ANALYSIS: ESTIMATOR = ML;
+
+MODEL:
+F BY SES1 SES2  SES3_r SES4 SES5_r SES6 SES7 SES8 SES9_r SES10_r;
+      
+OUTPUT:standardized;
+
+
+
+
+
+
+
+
+
+
+
+
+

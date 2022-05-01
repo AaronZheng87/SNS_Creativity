@@ -1,0 +1,673 @@
+---
+title: "论文数据分析"
+author:
+  - 郑元瑞
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+# 加载包和数据预处理
+
+清除环境中其他变量
+
+```{r}
+rm(list = ls())
+```
+
+## 加载包
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(report)
+library(sandwich)
+library(readxl)
+library(psych)
+library(writexl)
+library(lavaan)
+library(tidySEM)
+library(sjmisc)
+library(Hmisc)
+library(performance)
+library(rockchalk)
+library(interactions)
+library(semTools)
+library(effectsize)
+```
+
+## 数据预处理
+
+```{r}
+df <- read_excel(
+  "/Users/zhengyuanrui/Desktop/社交网站/数据/原始数据.xlsx"
+) 
+colnames(df) <-c("id","times_submit",
+                    "time_finish",
+                    "source","source_info","IP",
+                    "sex","grade","residence",
+                    "school","SNS1","SNS2",
+                    "SNS3","SNS4","SNS5","SNS6",
+                    "SES1","SES2","SES3","SES4","SES5",
+                    "SES6","SES7","SES8","SES9",
+                    "SES10","CSES1","CSES2","CSES3",
+                    "CSES4","EIB1","EIB2","EIB3","EIB4",
+                    "EIB5","EIB6","EIB7","EIB8","total")
+df <- df %>%
+  rec(SES3, rec = "1 = 4; 2 = 3; 3 = 2; 4 = 1") %>%
+  #
+  rec(SES5, rec = "1 = 4; 2 = 3; 3 = 2; 4 = 1") %>%
+  rec(SES8, rec = "1 = 4; 2 = 3; 3 = 2; 4 = 1") %>%
+  rec(SES9, rec = "1 = 4; 2 = 3; 3 = 2; 4 = 1") %>%
+  rec(SES10, rec = "1 = 4; 2 = 3; 3 = 2; 4 = 1") 
+
+df1 <- df
+df1$SNS1 <- scale(df1$SNS1, center = T, scale = T)
+df1$SNS2 <- scale(df1$SNS2, center = T, scale = T)
+df1$SNS3 <- scale(df1$SNS3, center = T, scale = T)
+df1$SNS4 <- scale(df1$SNS4, center = T, scale = T)
+df1$SNS5 <- scale(df1$SNS5, center = T, scale = T)
+df1$SNS6 <- scale(df1$SNS6, center = T, scale = T)
+# write_xlsx(df1, "信效度.xlsx")
+# getwd()
+```
+
+# 共同方法偏差检验
+
+## harman
+
+```{r}
+h <- df %>% dplyr::select(-c(id, times_submit,
+                      time_finish, source,
+                      source_info, IP, sex,
+                      grade, residence, school,
+                      total,SES3, SES5, SES9, SES10, SES8_r))
+h <- as.data.frame(h)
+# write_csv(h, "harman.csv")
+
+singlefactor <- psych::fa(h, nfactors = 1, rotate = "none", fm="ml")
+
+singlefactor[["Vaccounted"]]
+
+```
+
+## 双因子
+
+```{r}
+model1 <- '
+  # measurement model
+    SNS =~ SNS1 + SNS2 + SNS3 + SNS4 + 
+    SNS5 + SNS6
+    SES =~ SES1 + SES2 + SES3_r + SES4 + 
+    SES5_r + SES6 + SES7 + SES8 + SES9_r + SES10_r
+    CSES =~ CSES1 + CSES2 + CSES3 + CSES4
+    EIB =~ EIB1 + EIB2 + EIB3 + EIB4 + 
+    EIB5 + EIB6 + EIB7 + EIB8
+  # residual correlations
+  SNS ~~ SES
+  SNS ~~ CSES
+  SNS ~~ EIB
+  SES ~~ CSES
+  SES ~~ EIB 
+  CSES ~~ EIB
+'
+model2 <- '
+  # measurement model
+    SNS =~ SNS1 + SNS2 + SNS3 + SNS4 + SNS5 + 
+    SNS6
+    SES =~ SES1 + SES2 + SES3_r + SES4 + SES5_r + 
+    SES6 + SES7 + SES8 + SES9_r + SES10_r
+    
+    CSES =~ CSES1 + CSES2 + CSES3 + CSES4
+    EIB =~ EIB1 + EIB2 + EIB3 + EIB4 + EIB5 + 
+    EIB6 + EIB7 + EIB8
+    
+    f =~ 1*SNS1 + 1*SNS2 + 1*SNS3 + 1*SNS4 + 
+    1*SNS5 + 1*SNS6+1*SES1 + 1*SES2 + 
+    1*SES3_r + 1*SES4 + 1*SES5_r + 1*SES6 + 
+    1*SES7 + 1*SES8 + 1*SES9_r + 1*SES10_r+
+    1*CSES1 + 1*CSES2 + 1*CSES3 + 1*CSES4 + 
+    1*EIB1 + 
+    1*EIB2 + 1*EIB3 + 1*EIB4 + 1*EIB5 +
+    1*EIB6 + 1*EIB7 + 1*EIB8 
+    
+  # residual correlations
+  SNS ~~ SES
+  SNS ~~ CSES
+  SNS ~~ EIB
+  SES ~~ CSES
+  SES ~~ EIB 
+  CSES ~~ EIB
+'
+fit <- cfa(model1, data = df)
+fit2 <- cfa(model2, data = df)
+```
+
+```{r}
+fitMeasures(fit, c("chisq", "df", 
+                   "pvalue","cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+fitMeasures(fit2, c("chisq", "df", 
+                   "pvalue","cfi", "rmsea", "tli", 'srmr'))
+```
+
+# 问卷信效度分析
+
+## 社交网站使用强度
+
+### 信效度分析
+
+```{r}
+valid_SNS <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6"
+model_valid_SNS <- cfa(valid_SNS, data = df1)
+fitMeasures(model_valid_SNS, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+df1 %>% dplyr::select(SNS1:SNS6) %>% 
+  KMO()
+```
+```{r}
+df1 %>% dplyr::select(SNS1:SNS6) %>% 
+cortest.bartlett()
+```
+
+
+```{r}
+df1 %>% dplyr::select(SNS1:SNS6) %>% 
+  principal(nfactors=1, score=TRUE)
+```
+
+
+
+```{r}
+semTools::reliability(model_valid_SNS)
+```
+
+## 自尊
+
+### 信效度分析
+
+```{r}
+valid_SES <- "v_SES =~ SES1 + SES2 + 
+SES3_r + SES4 + SES5_r + SES6 + SES7 +
+SES8 + SES9_r + SES10_r
+"
+model_valid_SES <- cfa(valid_SES, data = df1)
+fitMeasures(model_valid_SES, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+
+```{r}
+df1 %>% dplyr::select(SES1, SES2, SES3_r,
+      SES4, SES5_r, SES6, SES7,
+      SES8, SES9_r, SES10_r) %>% KMO()
+```
+```{r}
+df1 %>% dplyr::select(SES1, SES2, SES3_r,
+      SES4, SES5_r, SES6, SES7,
+      SES8, SES9_r, SES10_r) %>% 
+  cortest.bartlett()
+```
+
+
+```{r}
+df1 %>% dplyr::select(SES1, SES2, SES3_r,
+      SES4, SES5_r, SES6, SES7,
+      SES8, SES9_r, SES10_r) %>% 
+  principal(nfactors=1, score=TRUE)
+```
+
+
+```{r}
+semTools::reliability(model_valid_SES)
+```
+#### 自尊量表双因子模型
+```{r}
+M8 <- "
+PSES =~ SES1 + SES2 + SES4 + SES6 + SES7
+
+NSES =~ SES3_r + SES5_r + SES8 + SES9_r + SES10_r
+
+GSES =~ SES1 + SES2 + SES3_r + SES4 + SES5_r + SES6 + SES7 + SES8 + SES9_r + SES10_r
+
+PSES ~~ NSES
+GSES ~~ 0*NSES
+GSES ~~ 0*PSES
+"
+
+M8_cfa <- cfa(M8,df1,optim.method="BFGS",optim.force.converged=T,check.post=F)
+fitMeasures(M8_cfa, c("chisq", "df", "pvalue","cfi", "rmsea", "tli", 'srmr'))
+
+```
+
+
+
+## 创新自我效能感
+
+### 信效度分析
+
+```{r}
+valid_CSES <- "v_CSES =~ CSES1 + CSES2 + 
+CSES3 + CSES4"
+model_valid_CSES <- cfa(valid_CSES, data = df1)
+fitMeasures(model_valid_CSES, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", 'srmr'))
+
+```
+
+```{r}
+df1 %>% dplyr::select(CSES1:CSES4) %>% 
+  KMO()
+```
+```{r}
+df1 %>% dplyr::select(CSES1:CSES4) %>% 
+  cortest.bartlett()
+```
+
+
+```{r}
+df1 %>% select(CSES1:CSES4) %>% 
+  principal(nfactors=1, score=TRUE)
+```
+
+
+```{r}
+semTools::reliability(model_valid_CSES)
+```
+
+## 创新行为
+
+### 信效度分析
+
+```{r}
+valid_EIB <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +
+      EIB6 + EIB7 + EIB8"
+model_valid_EIB <- cfa(valid_EIB, 
+                       data = df1)
+fitMeasures(model_valid_EIB, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+```
+
+```{r}
+df1 %>% dplyr::select(EIB1:EIB8) %>% 
+  KMO()
+```
+
+```{r}
+df1 %>% dplyr::select(EIB1:EIB8) %>% 
+  cortest.bartlett()
+```
+
+```{r}
+df1 %>% dplyr::select(EIB1:EIB8) %>% 
+  principal(nfactors=1, score=TRUE)
+```
+
+
+```{r}
+semTools::reliability(model_valid_EIB)
+```
+
+# 描述性统计和相关性分析
+
+## 数据各个维度加总
+
+```{r}
+df2 <- df1 %>%
+  mutate(
+    SNS_t = (SNS1 + SNS2 + SNS3 + 
+               SNS4 + SNS5 + SNS6) / 6,
+    SES_t = SES1 + SES2 + SES3_r + 
+      SES4 + SES5_r + SES6 + SES7 +
+      SES8 + SES9_r + SES10_r,
+    CSES_t = CSES1 + CSES2 + 
+      CSES3 + CSES4,
+    EIB_t = EIB1 + EIB2 + EIB3 + 
+      EIB4 + EIB5 +
+      EIB6 + EIB7 + EIB8
+  ) %>%
+  dplyr::select(
+    id, IP, sex, grade, 
+    residence, school,
+    SNS_t, SES_t,
+    CSES_t, EIB_t
+  ) %>% mutate(sex = if_else(sex == 1, "male", "female")) %>% 
+  mutate(residence = if_else(residence == 1, "city", "rural")) %>% 
+  mutate(school = if_else(school == 1,  "public", "private")) %>% 
+  mutate(grade = case_when(
+    grade == 1 ~ "freshman",
+    grade == 2 ~ "sophomore", 
+    grade == 3 ~ "junior", 
+    grade == 4 ~ "senior"
+  )) %>% mutate(across(IP:school, as.factor))
+
+df2 <- df2 %>% 
+  mutate(inter_raw = (SES_t - mean(SES_t)) * SNS_t, 
+                      center_SES = scale(SES_t, center = TRUE, 
+                                         scale = FALSE)) %>% mutate(
+    IP = str_extract(IP, "[\u4e00-\u9fa5]+")
+  ) 
+####3虚拟编码
+df2 <- cbind(df2, dummy.code(df2$sex))
+df2 <- cbind(df2, dummy.code(df2$grade))
+df2 <- cbind(df2, dummy.code(df2$residence))
+df2 <- cbind(df2, dummy.code(df2$school))
+```
+
+转换数据类型
+
+```{r}
+# df2$sex <- factor(df2$sex)
+# df2$grade <- factor(df2$grade)
+# df2$school <- factor(df2$school)
+df2$inter_raw <- as.numeric(df2$inter_raw)
+df2$center_SES <- as.numeric(df2$center_SES)
+df2$SNS_t <- as.numeric(df2$SNS_t)
+str(df2)
+```
+
+写出数据（如果需要的话）
+
+```{r}
+# write_xlsx(df2, "清洗完的数据.xlsx")
+# write_csv(df2, "清洗完的数据.csv")
+# write_csv(df2, "abc.csv")
+```
+
+## 描述性统计
+
+```{r}
+df_report <- df2 %>%
+  dplyr::select(SNS_t, SES_t, CSES_t, EIB_t, IP, sex, grade, residence, school)
+
+report::report(df_report)
+```
+
+## 相关分析
+
+```{r}
+cor(df_report[1:4])
+cor_p <- rcorr(as.matrix(df_report[1:4]))
+cor_p
+```
+
+### 筛选控制变量
+
+#### 性别显著
+
+```{r}
+t.test(EIB_t ~ sex, df2)#显著
+```
+
+```{r}
+cohens_d(EIB_t ~ sex, data =df2)
+```
+
+```{r}
+summary(aovsex <- aov(EIB_t ~ sex, data=df2))
+eta_squared(aovsex)
+```
+
+#### 年级显著
+
+```{r}
+summary(g_m <- aov(EIB_t ~ grade, df2))
+eta_squared(g_m)
+```
+
+#### 户口不显著
+
+```{r}
+t.test(EIB_t ~ residence, df2)
+
+cohens_d(EIB_t ~ residence, data =df2)
+```
+
+#### 学校性质显著
+
+```{r}
+t.test(EIB_t ~ school, df2)
+
+cohens_d(EIB_t ~ school, data =df2)
+```
+
+```{r}
+aov(EIB_t ~ school, data=df2) %>% summary()
+aov(EIB_t ~ school, data=df2) %>% eta_squared()
+```
+
+# 间接效应
+
+## 有调节的中介
+
+### 简单中介检验
+
+```{r}
+simple_med <- '
+EIB_t ~ b1*CSES_t
+EIB_t ~ cdash*SNS_t
+CSES_t ~ a1*SNS_t
+### 控制变量
+EIB_t ~ male
+EIB_t ~ public
+EIB_t ~ freshman
+EIB_t ~ sophomore
+EIB_t ~ junior
+
+CSES_t ~ male
+CSES_t ~ public
+CSES_t ~ freshman
+CSES_t ~ sophomore
+CSES_t ~ junior
+#ind and total
+ind := a1*b1
+direct := b1
+
+total := a1*b1 + cdash
+'
+
+fit_simple_med <- sem(simple_med, data = df2, 
+                     se = "bootstrap",bootstrap = 5000)
+parameterEstimates(fit_simple_med , standardized = TRUE, 
+                   rsquare = T, output = "text", header = TRUE)
+```
+
+总效应
+
+```{r}
+direct_mod <- lm(scale(df2$EIB_t, center = T, 
+                       scale = T) ~ 
+                   scale(df2$SNS_t, center = T, scale = T) +
+                   male + freshman + sophomore + junior + public, 
+                 df2)
+
+med_mod <- lm(scale(df2$CSES_t, center = T, 
+                    scale = T) ~ 
+                scale(df2$SNS_t, center = T, scale = T)+ 
+                male + freshman + sophomore + junior + public, 
+              df2)
+
+med_mod2 <- lm(scale(df2$EIB_t, center = T, 
+                     scale = T) ~ 
+                 scale(df2$CSES_t, center = T, scale = T)+ 
+                 male + freshman + sophomore + junior + public,
+               df2)
+
+out_mod <- lm(scale(df2$EIB_t, center = T, 
+                    scale = T) ~ 
+                scale(df2$SNS_t, center = T, scale = T) +
+                scale(df2$CSES_t, center = T, scale = T)+ 
+                male + freshman + sophomore + junior + public, 
+              df2)
+
+summary(direct_mod)
+
+summary(med_mod)
+
+summary(med_mod2)
+
+summary(out_mod)
+```
+
+```{r}
+simple <- '
+EIB_t ~ SNS_t + male + freshman + sophomore + junior + public
+'
+fit_simple <- sem(simple, data = df2, se = "bootstrap", 
+                  bootstrap = 5000)
+summary(fit_simple)
+```
+
+### 有调节的中介
+
+```{r}
+moderated_model <- '
+EIB_t ~ b1*CSES_t
+EIB_t ~ cdash*SNS_t
+EIB_t ~ male
+EIB_t ~ public
+EIB_t ~ freshman
+EIB_t ~ sophomore
+EIB_t ~ junior
+CSES_t ~ a1*SNS_t
+CSES_t ~ a2*center_SES
+CSES_t ~ a3*inter_raw
+CSES_t ~ male
+CSES_t ~ public
+CSES_t ~ freshman
+CSES_t ~ sophomore
+CSES_t ~ junior
+#间接效应,Conditional Indirect Effect
+ind_low := a1*b1 - a3*b1*4.455127 #低分组简单效应
+ind_med := a1*b1 - a3*b1*0
+ind_high := a1*b1 + a3*b1*4.455127
+#之间的差异
+dif1 := ind_med - ind_low
+dif2 := ind_high -ind_low
+dif3 := ind_high - ind_med
+#直接效应和有调节的中介效应
+imm := a3*b1 
+direct := cdash #直接效应
+#总效应
+total_low := cdash +ind_low 
+total_med := cdash +ind_med 
+total_high := cdash +ind_high
+'
+```
+
+### 模型结果
+
+```{r}
+fit_mod_model <- sem(moderated_model, data = df2, 
+                     se = "bootstrap",bootstrap = 5000)
+parameterEstimates(fit_mod_model, standardized = TRUE, 
+                   rsquare = T, output = "text", header = TRUE)
+```
+
+## 模型比较
+
+```{r}
+fitmeasures(fit_mod_model, c("aic", "ecvi", "bic"))
+```
+
+### 简单斜率分析
+
+```{r}
+simple_slope_m <- lm(CSES_t ~ center_SES*SNS_t + male + freshman + 
+                       sophomore + junior + public , data = df2)
+
+summary(simple_slope_m)
+```
+
+```{r}
+model_2nd <- lm(EIB_t ~ SNS_t + CSES_t + male + freshman + sophomore + 
+                  junior + public, data = df2)
+summary(model_2nd)
+```
+
+```{r}
+sd(df2$center_SES)
+```
+
+```{r}
+library(showtext)
+showtext_auto()
+library(effects)
+Inter.1a<-effect(c("center_SES:SNS_t"), 
+                 simple_slope_m,
+                 xlevels=list(center_SES=c(
+                   -4.455127,0, 4.455127)))
+
+df3 <- as.data.frame(Inter.1a)
+
+df3$center_SES <- ifelse(df3$center_SES == -4.455127,
+                         "低自尊组",
+                         ifelse(df3$center_SES ==4.455127, 
+                                "高自尊组", 
+                                "中自尊组"))
+
+df3$center_SES <- factor(df3$center_SES, 
+                         levels = c("高自尊组", "中自尊组", 
+                                    "低自尊组"))
+
+df3 <- df3 %>% rename("自尊水平分组" = center_SES)
+
+ggplot(data = df3, aes(x = SNS_t, y = fit,
+                       group = 自尊水平分组,
+                       shape = 自尊水平分组, 
+                       linetype = 自尊水平分组)) + 
+  geom_line(size = 1.2) + 
+  scale_linetype_manual(
+    values = c('dotdash', 'solid', 'dashed'))+
+  coord_cartesian(ylim = c(0, 30)) + 
+  scale_y_continuous(expand = expansion(0))+
+  theme_classic() + 
+  labs(
+   x = "社交网站使用强度",
+   y = "创新自我效能",
+   fill = NULL,
+   title = NULL
+ )+
+  theme(
+  plot.margin = unit(c(1, 1, 1, 1), "cm"),
+    panel.background = element_blank(),
+    plot.title = element_text(size = 22, face = "bold",
+                              hjust = 0.5,
+                              margin = margin(b = 15)),
+    axis.line = element_line(color = "black"),
+    axis.title = element_text(size = 22, color = "black",
+                              face = "bold"),
+    axis.text = element_text(size = 22, color = "black"),
+    axis.text.x = element_text(margin = margin(t = 10)),
+    axis.text.y = element_text(size = 17),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    legend.position = c(0.9, 0.95),
+    legend.background = element_rect(color = "black"),
+    legend.text = element_text(size = 15),
+    legend.margin = margin(t = 5, l = 5, r = 5, b = 5),
+    legend.title = element_text(size = 17),
+    legend.key = element_rect(color = NA, fill = NA)
+) + 
+  guides(
+    fill = guide_legend(
+      keywidth = 1.2,
+      keyheight = 1.2,
+      default.unit = "cm"
+    )
+  )
+
+# ggsave("simple_slop.png", width = 10, height = 7, dpi = 300)
+```
