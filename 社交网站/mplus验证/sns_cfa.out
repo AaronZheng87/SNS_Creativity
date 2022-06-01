@@ -1,0 +1,327 @@
+Mplus VERSION 8.3 (Mac)
+MUTHEN & MUTHEN
+05/23/2022  10:40 PM
+
+INPUT INSTRUCTIONS
+
+  title:this is code of cfa for SNS;
+  DATA:FILE IS dat_mplus.dat;
+  VARIABLE: NAMES =
+   SNS1-SNS6 SES1-SES10 CSES1-CSES4 EIB1-EIB8 SES5_r SES3_r SES8_r SES9_r SES10_r;
+
+  USEVARIABLES = SNS1 SNS2 SNS3 SNS4 SNS5 SNS6;
+  ANALYSIS:
+  TYPE = GENERAL;
+  ESTIMATOR=ML;
+  MODEL: SNS BY SNS1 SNS2 SNS3 SNS4 SNS5 SNS6;
+  OUTPUT:
+  MOD STAND;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+this is code of cfa for SNS;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                        1014
+
+Number of dependent variables                                    6
+Number of independent variables                                  0
+Number of continuous latent variables                            1
+
+Observed dependent variables
+
+  Continuous
+   SNS1        SNS2        SNS3        SNS4        SNS5        SNS6
+
+Continuous latent variables
+   SNS
+
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Maximum number of iterations                                  1000
+Convergence criterion                                    0.500D-04
+Maximum number of steepest descent iterations                   20
+
+Input data file(s)
+  dat_mplus.dat
+
+Input data format  FREE
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     SNS1                  0.000      -1.397      -3.495    2.27%      -0.272     -0.272     -0.272
+            1014.000       0.999       1.917       0.802   49.70%       0.802      0.802
+     SNS2                  0.000      -0.821      -2.629    4.24%      -0.797      0.119      0.119
+            1014.000       0.999       0.073       1.035   34.71%       0.119      1.035
+     SNS3                  0.000      -1.024      -2.719    3.94%      -0.909     -0.004     -0.004
+            1014.000       0.999       0.311       0.900   42.41%       0.900      0.900
+     SNS4                  0.000      -0.430      -1.993    8.78%      -1.186     -0.379      0.427
+            1014.000       0.999      -0.760       1.234   25.15%       0.427      1.234
+     SNS5                  0.000      -0.454      -2.285    5.42%      -0.501     -0.501      0.391
+            1014.000       0.999      -0.453       1.282   23.67%       0.391      1.282
+     SNS6                  0.000      -0.212      -1.850    9.86%      -1.043     -0.235     -0.235
+            1014.000       0.999      -0.868       1.380   21.01%       0.573      1.380
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       18
+
+Loglikelihood
+
+          H0 Value                       -7210.160
+          H1 Value                       -7029.535
+
+Information Criteria
+
+          Akaike (AIC)                   14456.319
+          Bayesian (BIC)                 14544.909
+          Sample-Size Adjusted BIC       14487.740
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                            361.249
+          Degrees of Freedom                     9
+          P-Value                           0.0000
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.196
+          90 Percent C.I.                    0.179  0.214
+          Probability RMSEA <= .05           0.000
+
+CFI/TLI
+
+          CFI                                0.889
+          TLI                                0.816
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                           3200.571
+          Degrees of Freedom                    15
+          P-Value                           0.0000
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value                              0.058
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ SNS      BY
+    SNS1               1.000      0.000    999.000    999.000
+    SNS2               0.941      0.041     22.950      0.000
+    SNS3               1.087      0.040     26.872      0.000
+    SNS4               0.995      0.045     22.303      0.000
+    SNS5               1.021      0.044     22.973      0.000
+    SNS6               0.867      0.045     19.109      0.000
+
+ Intercepts
+    SNS1               0.000      0.031      0.000      1.000
+    SNS2               0.000      0.031      0.000      1.000
+    SNS3               0.000      0.031      0.000      1.000
+    SNS4               0.000      0.031      0.000      1.000
+    SNS5               0.000      0.031      0.000      1.000
+    SNS6               0.000      0.031      0.000      1.000
+
+ Variances
+    SNS                0.572      0.043     13.362      0.000
+
+ Residual Variances
+    SNS1               0.427      0.024     17.648      0.000
+    SNS2               0.492      0.026     19.091      0.000
+    SNS3               0.323      0.021     15.584      0.000
+    SNS4               0.432      0.024     17.898      0.000
+    SNS5               0.402      0.023     17.187      0.000
+    SNS6               0.569      0.029     19.619      0.000
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ SNS      BY
+    SNS1               0.757      0.017     45.366      0.000
+    SNS2               0.712      0.018     39.077      0.000
+    SNS3               0.823      0.014     60.453      0.000
+    SNS4               0.753      0.017     45.031      0.000
+    SNS5               0.773      0.016     48.322      0.000
+    SNS6               0.656      0.021     31.399      0.000
+
+ Intercepts
+    SNS1               0.000      0.031      0.000      1.000
+    SNS2               0.000      0.031      0.000      1.000
+    SNS3               0.000      0.031      0.000      1.000
+    SNS4               0.000      0.031      0.000      1.000
+    SNS5               0.000      0.031      0.000      1.000
+    SNS6               0.000      0.031      0.000      1.000
+
+ Variances
+    SNS                1.000      0.000    999.000    999.000
+
+ Residual Variances
+    SNS1               0.427      0.025     16.906      0.000
+    SNS2               0.493      0.026     18.994      0.000
+    SNS3               0.323      0.022     14.409      0.000
+    SNS4               0.433      0.025     17.184      0.000
+    SNS5               0.403      0.025     16.288      0.000
+    SNS6               0.569      0.027     20.737      0.000
+
+
+STDY Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ SNS      BY
+    SNS1               0.757      0.017     45.366      0.000
+    SNS2               0.712      0.018     39.077      0.000
+    SNS3               0.823      0.014     60.453      0.000
+    SNS4               0.753      0.017     45.031      0.000
+    SNS5               0.773      0.016     48.322      0.000
+    SNS6               0.656      0.021     31.399      0.000
+
+ Intercepts
+    SNS1               0.000      0.031      0.000      1.000
+    SNS2               0.000      0.031      0.000      1.000
+    SNS3               0.000      0.031      0.000      1.000
+    SNS4               0.000      0.031      0.000      1.000
+    SNS5               0.000      0.031      0.000      1.000
+    SNS6               0.000      0.031      0.000      1.000
+
+ Variances
+    SNS                1.000      0.000    999.000    999.000
+
+ Residual Variances
+    SNS1               0.427      0.025     16.906      0.000
+    SNS2               0.493      0.026     18.994      0.000
+    SNS3               0.323      0.022     14.409      0.000
+    SNS4               0.433      0.025     17.184      0.000
+    SNS5               0.403      0.025     16.288      0.000
+    SNS6               0.569      0.027     20.737      0.000
+
+
+STD Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ SNS      BY
+    SNS1               0.757      0.028     26.723      0.000
+    SNS2               0.712      0.029     24.737      0.000
+    SNS3               0.823      0.027     30.357      0.000
+    SNS4               0.753      0.028     26.601      0.000
+    SNS5               0.772      0.028     27.539      0.000
+    SNS6               0.656      0.030     21.986      0.000
+
+ Intercepts
+    SNS1               0.000      0.031      0.000      1.000
+    SNS2               0.000      0.031      0.000      1.000
+    SNS3               0.000      0.031      0.000      1.000
+    SNS4               0.000      0.031      0.000      1.000
+    SNS5               0.000      0.031      0.000      1.000
+    SNS6               0.000      0.031      0.000      1.000
+
+ Variances
+    SNS                1.000      0.000    999.000    999.000
+
+ Residual Variances
+    SNS1               0.427      0.024     17.648      0.000
+    SNS2               0.492      0.026     19.091      0.000
+    SNS3               0.323      0.021     15.584      0.000
+    SNS4               0.432      0.024     17.898      0.000
+    SNS5               0.402      0.023     17.187      0.000
+    SNS6               0.569      0.029     19.619      0.000
+
+
+R-SQUARE
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    SNS1               0.573      0.025     22.683      0.000
+    SNS2               0.507      0.026     19.539      0.000
+    SNS3               0.677      0.022     30.226      0.000
+    SNS4               0.567      0.025     22.516      0.000
+    SNS5               0.597      0.025     24.161      0.000
+    SNS6               0.431      0.027     15.699      0.000
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.457E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+MODEL MODIFICATION INDICES
+
+NOTE:  Modification indices for direct effects of observed dependent variables
+regressed on covariates may not be included.  To include these, request
+MODINDICES (ALL).
+
+Minimum M.I. value for printing the modification index    10.000
+
+                                   M.I.     E.P.C.  Std E.P.C.  StdYX E.P.C.
+
+WITH Statements
+
+SNS2     WITH SNS1                87.441     0.167      0.167        0.365
+SNS3     WITH SNS1                88.764     0.160      0.160        0.431
+SNS3     WITH SNS2                14.670     0.066      0.066        0.165
+SNS4     WITH SNS1                47.582    -0.120     -0.120       -0.280
+SNS4     WITH SNS2                51.102    -0.128     -0.128       -0.278
+SNS5     WITH SNS1                19.639    -0.076     -0.076       -0.185
+SNS5     WITH SNS2                12.289    -0.062     -0.062       -0.139
+SNS5     WITH SNS3                49.818    -0.119     -0.119       -0.332
+SNS5     WITH SNS4                63.341     0.138      0.138        0.330
+SNS6     WITH SNS1                88.445    -0.174     -0.174       -0.354
+SNS6     WITH SNS2                13.603    -0.071     -0.071       -0.134
+SNS6     WITH SNS3                23.528    -0.085     -0.085       -0.199
+SNS6     WITH SNS4                77.393     0.164      0.164        0.330
+SNS6     WITH SNS5                85.552     0.169      0.169        0.354
+
+
+     Beginning Time:  22:40:24
+        Ending Time:  22:40:25
+       Elapsed Time:  00:00:01
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2019 Muthen & Muthen

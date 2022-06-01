@@ -36,6 +36,8 @@ library(rockchalk)
 library(interactions)
 library(semTools)
 library(effectsize)
+# install.packages("lavaanPlot")
+library(lavaanPlot)
 ```
 
 ## 数据预处理
@@ -174,18 +176,100 @@ fitMeasures(model_valid_SNS,
 df1 %>% dplyr::select(SNS1:SNS6) %>% 
   KMO()
 ```
-```{r}
-df1 %>% dplyr::select(SNS1:SNS6) %>% 
-cortest.bartlett()
-```
-
 
 ```{r}
-df1 %>% dplyr::select(SNS1:SNS6) %>% 
-  principal(nfactors=1, score=TRUE)
+df1 %>% filter(school == 1) -> df_public
+cfa(valid_SNS, data = df_public) %>% 
+  fitMeasures(c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+
+df1 %>% filter(school == 2) -> df_private
+cfa(valid_SNS, data = df_private) %>% 
+  fitMeasures(c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
 ```
 
+#### 模型修正
 
+```{r}
+valid_SNS <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6"
+model_valid_SNS <- cfa(valid_SNS, data = df1)
+modindices(model_valid_SNS, sort = TRUE, maximum.number = 5)
+```
+
+```{r}
+fitMeasures(model_valid_SNS, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+第一次修正
+```{r}
+valid_SNS2 <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6
+SNS1	~~	SNS3
+"
+model_valid_SNS2 <- cfa(valid_SNS2, data = df1)
+fitMeasures(model_valid_SNS2, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+modindices(model_valid_SNS2, sort = TRUE, maximum.number = 5)
+```
+第二次修正
+```{r}
+valid_SNS3 <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6
+SNS1	~~	SNS3
+SNS1	~~	SNS2
+"
+model_valid_SNS3 <- cfa(valid_SNS3, data = df1)
+fitMeasures(model_valid_SNS3, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+modindices(model_valid_SNS3, sort = TRUE, maximum.number = 5)
+```
+第三次修正
+```{r}
+valid_SNS4 <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6
+SNS1	~~	SNS3
+SNS1	~~	SNS2
+SNS2	~~	SNS3
+"
+model_valid_SNS4 <- cfa(valid_SNS4, data = df1)
+fitMeasures(model_valid_SNS4, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+modindices(model_valid_SNS4, sort = TRUE, maximum.number = 5)
+```
+第四次修正
+```{r}
+valid_SNS5 <- "v_SNS=~ SNS1 + SNS2 + 
+SNS3 + SNS4 + SNS5 + SNS6
+SNS1	~~	SNS3
+SNS1	~~	SNS2
+SNS2	~~	SNS3
+SNS1	~~	SNS6
+"
+model_valid_SNS5 <- cfa(valid_SNS5, data = df1)
+fitMeasures(model_valid_SNS5, 
+            c("chisq", "df", "pvalue",
+              "cfi", "rmsea", "tli", 'srmr'))
+```
+
+```{r}
+library(semPlot)
+semPaths(object = model_valid_SNS5, whatLabels = "std",)
+```
 
 ```{r}
 semTools::reliability(model_valid_SNS)
@@ -206,19 +290,18 @@ fitMeasures(model_valid_SES,
               "cfi", "rmsea", "tli", 'srmr'))
 ```
 
-
 ```{r}
 df1 %>% dplyr::select(SES1, SES2, SES3_r,
       SES4, SES5_r, SES6, SES7,
       SES8, SES9_r, SES10_r) %>% KMO()
 ```
+
 ```{r}
 df1 %>% dplyr::select(SES1, SES2, SES3_r,
       SES4, SES5_r, SES6, SES7,
       SES8, SES9_r, SES10_r) %>% 
   cortest.bartlett()
 ```
-
 
 ```{r}
 df1 %>% dplyr::select(SES1, SES2, SES3_r,
@@ -227,11 +310,12 @@ df1 %>% dplyr::select(SES1, SES2, SES3_r,
   principal(nfactors=1, score=TRUE)
 ```
 
-
 ```{r}
 semTools::reliability(model_valid_SES)
 ```
+
 #### 自尊量表双因子模型
+
 ```{r}
 M8 <- "
 PSES =~ SES1 + SES2 + SES4 + SES6 + SES7
@@ -250,8 +334,6 @@ fitMeasures(M8_cfa, c("chisq", "df", "pvalue","cfi", "rmsea", "tli", 'srmr'))
 
 ```
 
-
-
 ## 创新自我效能感
 
 ### 信效度分析
@@ -267,20 +349,54 @@ fitMeasures(model_valid_CSES,
 ```
 
 ```{r}
+modindices(model_valid_CSES, sort = TRUE, maximum.number = 5)
+```
+#### 模型修正
+一次修正
+```{r}
+valid_CSES2 <- "v_CSES =~ CSES1 + CSES2 + 
+CSES3 + CSES4
+CSES3	~~	CSES4
+"
+model_valid_CSES2 <- cfa(valid_CSES2, data = df1)
+fitMeasures(model_valid_CSES2, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", 'srmr'))
+modindices(model_valid_CSES2, sort = TRUE, maximum.number = 5)
+```
+
+
+二次修正
+```{r}
+valid_CSES3 <- "v_CSES =~ CSES1 + CSES2 + 
+CSES3 + CSES4
+CSES3	~~	CSES4
+CSES2	~~	CSES3
+"
+model_valid_CSES3 <- cfa(valid_CSES2, data = df1)
+fitMeasures(model_valid_CSES3, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", 'srmr'))
+modindices(model_valid_CSES3, sort = TRUE, maximum.number = 5)
+```
+
+
+
+
+```{r}
 df1 %>% dplyr::select(CSES1:CSES4) %>% 
   KMO()
 ```
+
 ```{r}
 df1 %>% dplyr::select(CSES1:CSES4) %>% 
   cortest.bartlett()
 ```
 
-
 ```{r}
 df1 %>% select(CSES1:CSES4) %>% 
   principal(nfactors=1, score=TRUE)
 ```
-
 
 ```{r}
 semTools::reliability(model_valid_CSES)
@@ -299,7 +415,106 @@ model_valid_EIB <- cfa(valid_EIB,
 fitMeasures(model_valid_EIB, 
             c("chisq", "df", "pvalue","cfi", 
               "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB, sort = TRUE, maximum.number = 5)
 ```
+#### 模型修正
+一次修正
+```{r}
+valid_EIB2 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+"
+model_valid_EIB2 <- cfa(valid_EIB2, 
+                       data = df1)
+fitMeasures(model_valid_EIB2, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB2, sort = T, maximum.number = 5)
+```
+第二次修正
+```{r}
+valid_EIB3 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+EIB1	~~	EIB2
+"
+model_valid_EIB3 <- cfa(valid_EIB3, 
+                       data = df1)
+fitMeasures(model_valid_EIB3, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB3, sort = T, maximum.number = 5)
+```
+
+```{r}
+valid_EIB4 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+EIB1	~~	EIB2
+EIB7	~~	EIB8
+"
+model_valid_EIB4 <- cfa(valid_EIB4, 
+                       data = df1)
+fitMeasures(model_valid_EIB4, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB4, sort = T, maximum.number = 5)
+```
+
+第四次修正
+```{r}
+valid_EIB5 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+EIB1	~~	EIB2
+EIB7	~~	EIB8
+EIB6	~~	EIB7
+"
+model_valid_EIB5 <- cfa(valid_EIB5, 
+                       data = df1)
+fitMeasures(model_valid_EIB5, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB5, sort = T, maximum.number = 5)
+```
+
+第五次修正
+```{r}
+valid_EIB6 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+EIB1	~~	EIB2
+EIB7	~~	EIB8
+EIB6	~~	EIB7
+EIB5	~~	EIB6
+"
+model_valid_EIB6 <- cfa(valid_EIB6, 
+                       data = df1)
+fitMeasures(model_valid_EIB6, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB6, sort = T, maximum.number = 5)
+```
+第六次修正
+```{r}
+valid_EIB7 <- "v_EIB =~ EIB1 + EIB2 + 
+EIB3 + EIB4 + EIB5 +EIB6 + EIB7 + EIB8
+EIB5	~~	EIB7
+EIB1	~~	EIB2
+EIB7	~~	EIB8
+EIB6	~~	EIB7
+EIB5	~~	EIB6
+EIB6	~~	EIB8
+"
+model_valid_EIB7 <- cfa(valid_EIB7, 
+                       data = df1)
+fitMeasures(model_valid_EIB7, 
+            c("chisq", "df", "pvalue","cfi", 
+              "rmsea", "tli", "srmr", "gfi"))
+modindices(model_valid_EIB7, sort = T, maximum.number = 5)
+```
+
+
 
 ```{r}
 df1 %>% dplyr::select(EIB1:EIB8) %>% 
@@ -315,7 +530,6 @@ df1 %>% dplyr::select(EIB1:EIB8) %>%
 df1 %>% dplyr::select(EIB1:EIB8) %>% 
   principal(nfactors=1, score=TRUE)
 ```
-
 
 ```{r}
 semTools::reliability(model_valid_EIB)
@@ -394,6 +608,40 @@ df_report <- df2 %>%
   dplyr::select(SNS_t, SES_t, CSES_t, EIB_t, IP, sex, grade, residence, school)
 
 report::report(df_report)
+```
+
+```{r}
+df_report %>% 
+  group_by(sex) %>% 
+  summarise(mean = mean(EIB_t))
+```
+
+```{r}
+df_report %>% 
+  group_by(grade) %>% 
+  summarise(mean = mean(EIB_t))
+```
+
+## 可视化
+
+```{r}
+df2 %>% 
+  select(id, SNS_t, SES_t, CSES_t, EIB_t) %>% 
+  pivot_longer(cols = SNS_t:EIB_t, names_to = "scale",
+               values_to = "value") %>% 
+   ggplot(aes(x = value, y = stat(density))) +
+  geom_histogram(aes(fill = scale)) + 
+  geom_density() +
+  facet_wrap(~scale)
+```
+
+```{r}
+df2 %>% 
+  select(id, SNS_t, SES_t, CSES_t, EIB_t) %>% 
+  pivot_longer(cols = SNS_t:EIB_t, names_to = "scale",
+               values_to = "value") %>% filter(scale == "SNS_t") %>% 
+   ggplot(aes(x = scale, y = value)) +
+  geom_boxplot(outlier.colour="red", outlier.shape=7,outlier.size=4)
 ```
 
 ## 相关分析
@@ -593,8 +841,8 @@ summary(simple_slope_m)
 ```
 
 ```{r}
-model_2nd <- lm(EIB_t ~ SNS_t + CSES_t + male + freshman + sophomore + 
-                  junior + public, data = df2)
+model_2nd <- lm(scale(EIB_t) ~ scale(SNS_t) + scale(CSES_t) + scale(male) + scale(freshman) + scale(sophomore) + 
+                  scale(junior) + scale(public), data = df2)
 summary(model_2nd)
 ```
 
@@ -610,9 +858,9 @@ Inter.1a<-effect(c("center_SES:SNS_t"),
                  simple_slope_m,
                  xlevels=list(center_SES=c(
                    -4.455127,0, 4.455127)))
-
+font_families()
 df3 <- as.data.frame(Inter.1a)
-
+new <- "serif"
 df3$center_SES <- ifelse(df3$center_SES == -4.455127,
                          "低自尊组",
                          ifelse(df3$center_SES ==4.455127, 
@@ -639,7 +887,8 @@ ggplot(data = df3, aes(x = SNS_t, y = fit,
    x = "社交网站使用强度",
    y = "创新自我效能",
    fill = NULL,
-   title = NULL
+   title = NULL, 
+   linetype = NULL
  )+
   theme(
   plot.margin = unit(c(1, 1, 1, 1), "cm"),
@@ -651,23 +900,77 @@ ggplot(data = df3, aes(x = SNS_t, y = fit,
     axis.title = element_text(size = 22, color = "black",
                               face = "bold"),
     axis.text = element_text(size = 22, color = "black"),
-    axis.text.x = element_text(margin = margin(t = 10)),
-    axis.text.y = element_text(size = 17),
+    axis.text.x = element_text(size = 19,margin = margin(t = 5), family = new),
+    axis.text.y = element_text(size = 19, margin = margin(r = 5), family = new),
     axis.title.y = element_text(margin = margin(r = 10)),
-    legend.position = c(0.9, 0.95),
-    legend.background = element_rect(color = "black"),
-    legend.text = element_text(size = 15),
+  axis.title.x = element_text(margin = margin(t = 10)),
+    legend.position = c(0.9, 0.955),
+   # legend.background = element_rect(color = "black"),
+    legend.text = element_text(size = 18),
     legend.margin = margin(t = 5, l = 5, r = 5, b = 5),
-    legend.title = element_text(size = 17),
+    legend.title = element_text(size = 20),
     legend.key = element_rect(color = NA, fill = NA)
 ) + 
   guides(
-    fill = guide_legend(
-      keywidth = 1.2,
-      keyheight = 1.2,
+    linetype = guide_legend(
+      keywidth = 1.4,
+      keyheight = 1.4,
       default.unit = "cm"
     )
   )
 
-# ggsave("simple_slop.png", width = 10, height = 7, dpi = 300)
+
+ggsave("simple_slope.png", width = 10, height = 7, dpi = 900)
+
+```
+
+# R方占比
+
+```{r}
+simple_m <- "
+CSES_t ~ SNS_t
+CSES_t ~ center_SES
+CSES_t ~ inter_raw
+CSES_t ~ male
+CSES_t ~ public
+CSES_t ~ freshman
+CSES_t ~ sophomore
+CSES_t ~ junior
+"
+fit_simple <- sem(simple_m , data = df2, 
+                     se = "bootstrap",bootstrap = 5000)
+
+parameterEstimates(fit_simple, standardized = TRUE, 
+                   rsquare = T, output = "text", header = TRUE)
+```
+
+```{r}
+simple_m_n <- "
+CSES_t ~ SNS_t
+CSES_t ~ center_SES
+CSES_t ~ male
+CSES_t ~ public
+CSES_t ~ freshman
+CSES_t ~ sophomore
+CSES_t ~ junior
+"
+fit_simple_n <- sem(simple_m_n , data = df2, 
+                     se = "bootstrap",bootstrap = 5000)
+
+parameterEstimates(fit_simple_n, standardized = TRUE, 
+                   rsquare = T, output = "text", header = TRUE)
+summary(fit_simple_n,fit.measures = TRUE, standardized = TRUE)
+```
+
+```{r}
+simple_mn <- lm(CSES_t ~ center_SES + SNS_t + male + freshman + 
+                       sophomore + junior + public , data = df2)
+summary(simple_mn)
+```
+
+```{r}
+simple_slope_m2 <- lm(scale(CSES_t) ~ scale(center_SES) + scale(SNS_t) + scale(inter_raw) + scale(male) + scale(freshman) + 
+                       scale(sophomore) + scale(junior) + scale(public) , data = df2)
+
+summary(simple_slope_m2)
 ```
